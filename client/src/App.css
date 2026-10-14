@@ -407,3 +407,20 @@
     padding: 20px;
   }
 }
+
+.edit-student-link {
+  display: inline-flex;
+  margin-top: 20px;
+  padding: 9px 14px;
+  border: 1px solid #dbe2ec;
+  border-radius: 8px;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.edit-student-link:hover {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}

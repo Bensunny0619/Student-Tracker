@@ -168,5 +168,169 @@ router.post("/", async (req, res) => {
   }
 });
 
+const updateStudentSchema = studentSchema
+  .omit({ status: true })
+  .partial()
+  .extend({
+    status: z.enum(["active", "paused", "ended"]).optional(),
+  })
+  .refine(
+    (data) => Object.keys(data).length > 0,
+    { message: "Provide at least one field to update" }
+  );
+
+
+
+
+router.get("/:id", async (req, res) => {
+  try {
+    const studentId = Number(req.params.id);
+
+    if (!Number.isSafeInteger(studentId) || studentId < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student ID",
+      });
+    }
+
+    const tutor = await db("tutors")
+      .where({
+        id: req.session.tutorId,
+        status: "active",
+      })
+      .first("id");
+
+    if (!tutor) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+    }
+
+    const student = await db("students")
+      .where({
+        id: studentId,
+        tutor_id: req.session.tutorId,
+      })
+      .first();
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    // MariaDB may return JSON as a string.
+    if (typeof student.goals === "string") {
+      student.goals = JSON.parse(student.goals);
+    }
+
+    return res.json({
+      success: true,
+      student,
+    });
+  } catch (error) {
+    console.error("Failed to retrieve student");
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to retrieve student",
+    });
+  }
+});
+
+
+router.patch("/:id", async (req, res) => {
+  try {
+    const studentId = Number(req.params.id);
+
+    if (!Number.isSafeInteger(studentId) || studentId < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student ID",
+      });
+    }
+
+    const validation = updateStudentSchema.safeParse(req.body);
+
+    if (!validation.success) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student information",
+      });
+    }
+
+    const tutorId = req.session.tutorId;
+
+    const tutor = await db("tutors")
+      .where({
+        id: tutorId,
+        status: "active",
+      })
+      .first("id");
+
+    if (!tutor) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+    }
+
+    const existingStudent = await db("students")
+      .where({
+        id: studentId,
+        tutor_id: tutorId,
+      })
+      .first("id");
+
+    if (!existingStudent) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    const updates = { ...validation.data };
+
+    if (updates.goals !== undefined) {
+      updates.goals = updates.goals === null
+        ? null
+        : JSON.stringify(updates.goals);
+    }
+
+    await db("students")
+      .where({
+        id: studentId,
+        tutor_id: tutorId,
+      })
+      .update(updates);
+
+    const student = await db("students")
+      .where({
+        id: studentId,
+        tutor_id: tutorId,
+      })
+      .first();
+
+    if (typeof student.goals === "string") {
+      student.goals = JSON.parse(student.goals);
+    }
+
+    return res.json({
+      success: true,
+      message: "Student updated successfully",
+      student,
+    });
+  } catch (error) {
+    console.error("Failed to update student");
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to update student",
+    });
+  }
+});
+
 
 module.exports = router;

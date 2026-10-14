@@ -1,6 +1,10 @@
 
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import {
+  Link,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
 
 const initialForm = {
@@ -15,12 +19,61 @@ const initialForm = {
   status: "active",
 };
 
-export default function AddStudent() {
+export default function AddStudent({ editMode = false }) {
   const navigate = useNavigate();
+  const { id } = useParams();
 
   const [form, setForm] = useState(initialForm);
+  const [loading, setLoading] = useState(editMode);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!editMode) return;
+
+    const controller = new AbortController();
+
+    async function loadStudent() {
+      try {
+        const response = await fetch(`/api/students/${id}`, {
+          credentials: "include",
+          signal: controller.signal,
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Unable to load student");
+        }
+
+        const student = data.student;
+
+        setForm({
+          first_name: student.first_name || "",
+          grade: String(student.grade),
+          province: student.province || "",
+          timezone: student.timezone || "America/Toronto",
+          parent_name: student.parent_name || "",
+          parent_contact: student.parent_contact || "",
+          fee: student.fee == null ? "" : String(student.fee),
+          currency: student.currency || "CAD",
+          status: student.status || "active",
+        });
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          setError(err.message);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadStudent();
+
+    return () => controller.abort();
+  }, [editMode, id]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -49,8 +102,12 @@ export default function AddStudent() {
     };
 
     try {
-      const response = await fetch("/api/students", {
-        method: "POST",
+      const url = editMode
+        ? `/api/students/${id}`
+        : "/api/students";
+
+      const response = await fetch(url, {
+        method: editMode ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -61,7 +118,7 @@ export default function AddStudent() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to add student");
+        throw new Error(data.message || "Unable to save student");
       }
 
       navigate("/students", { replace: true });
@@ -70,6 +127,14 @@ export default function AddStudent() {
     } finally {
       setSaving(false);
     }
+  }
+
+  if (loading) {
+    return (
+      <main className="students-page">
+        <p>Loading student information...</p>
+      </main>
+    );
   }
 
   return (
@@ -82,8 +147,12 @@ export default function AddStudent() {
       <div className="page-heading">
         <div>
           <p className="eyebrow">STUDENT MANAGEMENT</p>
-          <h1>Add Student</h1>
-          <p>Enter the student's information below.</p>
+          <h1>{editMode ? "Edit Student" : "Add Student"}</h1>
+          <p>
+            {editMode
+              ? "Update the student's information."
+              : "Enter the student's information below."}
+          </p>
         </div>
       </div>
 
@@ -132,7 +201,6 @@ export default function AddStudent() {
               name="province"
               value={form.province}
               onChange={handleChange}
-              placeholder="e.g. Ontario"
               maxLength={100}
             />
           </div>
@@ -175,7 +243,6 @@ export default function AddStudent() {
               value={form.parent_contact}
               onChange={handleChange}
               maxLength={255}
-              placeholder="Email or phone number"
             />
           </div>
 
@@ -190,7 +257,6 @@ export default function AddStudent() {
               step="0.01"
               value={form.fee}
               onChange={handleChange}
-              placeholder="e.g. 50000"
             />
           </div>
 
@@ -232,10 +298,14 @@ export default function AddStudent() {
           <button
             type="submit"
             className="login-button save-button"
-            disabled={saving}
+            disabled={saving || (editMode && Boolean(error))}
           >
             <Save size={18} />
-            {saving ? "Saving..." : "Save Student"}
+            {saving
+              ? "Saving..."
+              : editMode
+                ? "Update Student"
+                : "Save Student"}
           </button>
         </div>
       </form>

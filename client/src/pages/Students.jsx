@@ -92,6 +92,12 @@ export default function Students() {
               <p className="student-timezone">
                 {student.timezone}
               </p>
+              <Link
+                to={`/students/${student.id}/edit`}
+                className="edit-student-link"
+                >
+                Edit Student
+                </Link>
             </div>
           ))}
         </div>

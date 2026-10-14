@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Students from "./pages/Students";
 import AddStudent from "./pages/AddStudent";  
+import EditStudent from "./pages/EditStudent";
 
 import "./App.css";
 
@@ -54,6 +55,7 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/students" element={<Students />} />
             <Route path="/students/new" element={<AddStudent />} />
+            <Route path="/students/:id/edit" element={<EditStudent />} />
           </Route>
 
           <Route path="*" element={<HomeRedirect />} />
