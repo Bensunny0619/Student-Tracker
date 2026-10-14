@@ -156,12 +156,30 @@ export default function Students() {
                 {student.timezone}
               </p>
 
-              <Link
-                to={`/students/${student.id}/edit`}
-                className="edit-student-link"
-              >
-                Edit Student
-              </Link>
+             
+<div className="student-card-actions">
+  <Link
+    to={`/students/${student.id}/edit`}
+    className="edit-student-link"
+  >
+    Edit Student
+  </Link>
+
+  <Link
+    to={`/students/${student.id}/lessons/new`}
+    className="log-lesson-link"
+  >
+    Log Lesson
+  </Link>
+
+  <Link
+    to={`/students/${student.id}/lessons`}
+    className="view-lessons-link"
+  >
+    View Lessons
+  </Link>
+</div>
+
             </div>
           ))}
         </div>

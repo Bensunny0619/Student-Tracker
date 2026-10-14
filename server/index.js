@@ -8,6 +8,7 @@ const helmet = require("helmet");
 const createSessionMiddleware = require("./config/session");
 const authRoutes = require("./routes/authRoutes");
 const studentRoutes = require("./routes/studentRoutes");
+const lessonRoutes = require("./routes/lessonRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -34,6 +35,8 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
+app.use("/api/students/:id/lessons", lessonRoutes);
+
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
