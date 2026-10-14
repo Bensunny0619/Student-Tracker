@@ -10,6 +10,8 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Students from "./pages/Students";
+import AddStudent from "./pages/AddStudent";  
 
 import "./App.css";
 
@@ -48,8 +50,10 @@ export default function App() {
           <Route path="/" element={<HomeRedirect />} />
           <Route path="/login" element={<LoginRoute />} />
 
-          <Route element={<ProtectedRoute />}>
+         <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/students" element={<Students />} />
+            <Route path="/students/new" element={<AddStudent />} />
           </Route>
 
           <Route path="*" element={<HomeRedirect />} />
