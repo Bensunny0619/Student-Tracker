@@ -389,4 +389,93 @@ router.get("/:lessonId", async (req, res) => {
 });
 
 
+
+ // DELETE /api/students/:id/lessons/:lessonId
+router.delete("/:lessonId", async (req, res) => {
+  try {
+    const studentId = Number(req.params.id);
+    const lessonId = Number(req.params.lessonId);
+    const tutorId = req.session.tutorId;
+
+    // Validate both IDs
+    if (
+      !Number.isSafeInteger(studentId) ||
+      studentId < 1 ||
+      !Number.isSafeInteger(lessonId) ||
+      lessonId < 1
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student or lesson ID",
+      });
+    }
+
+    // Confirm the logged-in tutor is active
+    const tutor = await db("tutors")
+      .where({
+        id: tutorId,
+        status: "active",
+      })
+      .first("id");
+
+    if (!tutor) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+    }
+
+    // Confirm the student belongs to this tutor
+    const student = await db("students")
+      .where({
+        id: studentId,
+        tutor_id: tutorId,
+      })
+      .first("id");
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    // Confirm the lesson belongs to this student
+    const lesson = await db("lessons")
+      .where({
+        id: lessonId,
+        student_id: studentId,
+      })
+      .first("id");
+
+    if (!lesson) {
+      return res.status(404).json({
+        success: false,
+        message: "Lesson not found",
+      });
+    }
+
+    // Delete the lesson
+    await db("lessons")
+      .where({
+        id: lessonId,
+        student_id: studentId,
+      })
+      .del();
+
+    return res.json({
+      success: true,
+      message: "Lesson deleted successfully",
+    });
+  } catch (error) {
+    console.error("Failed to delete lesson:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to delete lesson",
+    });
+  }
+});
+
+
 module.exports = router;

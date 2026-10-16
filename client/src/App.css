@@ -601,3 +601,39 @@
 }
 
 
+.lesson-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+
+.lesson-actions .edit-lesson-link,
+.delete-lesson-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.delete-lesson-button {
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+}
+
+.delete-lesson-button:hover:not(:disabled) {
+  background: #ffe4e6;
+}
+
+.delete-lesson-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+

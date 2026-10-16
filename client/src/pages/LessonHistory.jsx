@@ -8,6 +8,7 @@ import {
   Clock3,
   Plus,
   Pencil,
+  Trash2,
 } from "lucide-react";
 
 function formatLessonDate(value) {
@@ -36,6 +37,7 @@ export default function LessonHistory() {
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -75,6 +77,50 @@ export default function LessonHistory() {
 
     return () => controller.abort();
   }, [id]);
+
+  
+async function handleDeleteLesson(lesson) {
+  const confirmed = window.confirm(
+    `Are you sure you want to delete "${lesson.topic}"?\n\nThis action cannot be undone.`
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  setDeletingId(lesson.id);
+  setError("");
+
+  try {
+    const response = await fetch(
+      `/api/students/${id}/lessons/${lesson.id}`,
+      {
+        method: "DELETE",
+        credentials: "include",
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Unable to delete lesson"
+      );
+    }
+
+    // Remove the deleted lesson from the screen
+    setLessons((previousLessons) =>
+      previousLessons.filter(
+        (item) => item.id !== lesson.id
+      )
+    );
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setDeletingId(null);
+  }
+}
+
 
   if (loading) {
     return (
@@ -120,6 +166,12 @@ export default function LessonHistory() {
         </Link>
       </div>
 
+      {error && (
+  <p className="error-message" role="alert">
+    {error}
+  </p>
+)}
+
       <p className="student-results-count">
         {lessons.length} recorded{" "}
         {lessons.length === 1 ? "lesson" : "lessons"}
@@ -156,13 +208,29 @@ export default function LessonHistory() {
                 </span>
               </div>
 
-              <Link
-  to={`/students/${id}/lessons/${lesson.id}/edit`}
-  className="edit-lesson-link"
->
-  <Pencil size={16} />
-  Edit Lesson
-</Link>
+              
+<div className="lesson-actions">
+  <Link
+    to={`/students/${id}/lessons/${lesson.id}/edit`}
+    className="edit-lesson-link"
+  >
+    <Pencil size={16} />
+    Edit Lesson
+  </Link>
+
+  <button
+    type="button"
+    className="delete-lesson-button"
+    onClick={() => handleDeleteLesson(lesson)}
+    disabled={deletingId !== null}
+  >
+    <Trash2 size={16} />
+    {deletingId === lesson.id
+      ? "Deleting..."
+      : "Delete Lesson"}
+  </button>
+</div>
+
 
               {lesson.lesson_notes && (
                 <div className="lesson-detail">
