@@ -726,3 +726,105 @@
     align-items: flex-start;
   }
 }
+
+
+/* Student Card Action Links */
+
+.student-action-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 10px 14px;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+
+  background-color: #f8fafc;
+  color: #334155;
+
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.student-action-link:hover {
+  background-color: #eff6ff;
+  color: #2563eb;
+  border-color: #93c5fd;
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.1);
+}
+
+.student-action-link:active {
+  transform: translateY(0);
+}
+
+.student-action-link:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 3px;
+}
+
+/* Keep action buttons organized */
+.student-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+  .student-action-link {
+    flex: 1 1 140px;
+    white-space: normal;
+    text-align: center;
+  }
+}
+
+
+
+
+/* Student Progress Chart */
+
+.progress-chart-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  margin: 24px 0;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.progress-chart-card h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.progress-chart-description {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 24px;
+}
+
+.progress-chart-container {
+  width: 100%;
+  height: 320px;
+  min-width: 0;
+}
+
+@media (max-width: 600px) {
+  .progress-chart-card {
+    padding: 16px;
+  }
+
+  .progress-chart-container {
+    height: 260px;
+  }
+}

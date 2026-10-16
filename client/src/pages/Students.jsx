@@ -1,7 +1,9 @@
 
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Plus, Users } from "lucide-react";
+import { ArrowLeft, Plus, Users, ClipboardList,
+  ChartNoAxesColumnIncreasing,} from "lucide-react";
+
 
 export default function Students() {
   const [students, setStudents] = useState([]);
@@ -160,24 +162,42 @@ export default function Students() {
 <div className="student-card-actions">
   <Link
     to={`/students/${student.id}/edit`}
-    className="edit-student-link"
+    className="student-action-link"
   >
     Edit Student
   </Link>
 
   <Link
     to={`/students/${student.id}/lessons/new`}
-    className="log-lesson-link"
+    className="student-action-link"
   >
     Log Lesson
   </Link>
 
   <Link
     to={`/students/${student.id}/lessons`}
-    className="view-lessons-link"
+    className="student-action-link"
   >
     View Lessons
   </Link>
+
+  
+<Link
+  to={`/students/${student.id}/assessments/new`}
+  className="student-action-link"
+>
+  <ClipboardList size={16} />
+  Record Assessment
+</Link>
+
+<Link
+  to={`/students/${student.id}/assessments`}
+  className="student-action-link"
+>
+  <ChartNoAxesColumnIncreasing size={16} />
+  View Assessments
+</Link>
+
 </div>
 
             </div>

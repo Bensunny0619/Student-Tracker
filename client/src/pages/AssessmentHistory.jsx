@@ -8,6 +8,7 @@ import {
   Plus,
   BookOpen,
 } from "lucide-react";
+import ProgressChart from "../components/ProgressChart";
 
 function formatAssessmentDate(value) {
   if (!value) return "Date unavailable";
@@ -121,6 +122,9 @@ export default function AssessmentHistory() {
         </Link>
       </div>
 
+        <ProgressChart assessments={assessments} />
+
+        
       <p className="student-results-count">
         {assessments.length} recorded{" "}
         {assessments.length === 1
