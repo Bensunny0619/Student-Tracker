@@ -10,6 +10,7 @@ const authRoutes = require("./routes/authRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const lessonRoutes = require("./routes/lessonRoutes");
 const assessmentRoutes = require("./routes/assessmentRoutes");
+const progressRoutes = require("./routes/progressRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -38,6 +39,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/students/:id/lessons", lessonRoutes);
 app.use("/api/students/:id/assessments", assessmentRoutes);
+app.use("/api/students/:id/progress", progressRoutes);
 
 
 app.listen(PORT, () => {

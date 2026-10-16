@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Plus, Users, ClipboardList,
-  ChartNoAxesColumnIncreasing,} from "lucide-react";
+  ChartNoAxesColumnIncreasing, ChartNoAxesCombined} from "lucide-react";
 
 
 export default function Students() {
@@ -196,6 +196,14 @@ export default function Students() {
 >
   <ChartNoAxesColumnIncreasing size={16} />
   View Assessments
+</Link>
+
+<Link
+  to={`/students/${student.id}/progress`}
+  className="student-action-link"
+>
+  <ChartNoAxesCombined size={16} />
+  Progress Overview
 </Link>
 
 </div>

@@ -943,3 +943,128 @@
     width: 100%;
   }
 }
+
+
+
+/* Student Progress Overview */
+
+.student-progress-section {
+  margin-top: 30px;
+}
+
+.student-progress-section h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 18px;
+}
+
+.student-progress-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(180px, 1fr)
+  );
+  gap: 16px;
+}
+
+.student-progress-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.student-progress-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.student-progress-card strong {
+  font-size: 26px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* Recent Activity */
+
+.student-recent-activity {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.student-activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.student-activity-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  background: #eff6ff;
+  color: #2563eb;
+  border-radius: 10px;
+}
+
+.student-activity-item h3 {
+  font-size: 15px;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.student-activity-item p {
+  font-size: 14px;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+.student-activity-item span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* Quick Actions */
+
+.student-progress-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Responsive */
+
+@media (max-width: 700px) {
+  .student-recent-activity {
+    grid-template-columns: 1fr;
+  }
+
+  .student-progress-grid {
+    grid-template-columns: repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  }
+}
+
+@media (max-width: 420px) {
+  .student-progress-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -17,6 +17,7 @@ import LessonHistory from "./pages/LessonHistory";
 import LogLesson from "./pages/LogLesson";
 import AddAssessment from "./pages/AddAssessment";
 import AssessmentHistory from "./pages/AssessmentHistory";
+import StudentProgress from "./pages/StudentProgress";
 
 import "./App.css";
 
@@ -65,6 +66,8 @@ export default function App() {
             <Route path="/students/:id/lessons/:lessonId/edit" element={<LogLesson />} />    
             <Route path="/students/:id/assessments/new" element={<AddAssessment />} /> 
             <Route path="/students/:id/assessments" element={<AssessmentHistory />} />
+            <Route path="/students/:id/progress" element={<StudentProgress />} />
+
           </Route>
 
           <Route path="*" element={<HomeRedirect />} />
