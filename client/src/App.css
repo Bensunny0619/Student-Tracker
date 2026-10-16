@@ -657,3 +657,72 @@
   color: #166534;
   margin-bottom: 16px;
 }
+
+
+.assessment-list {
+  display: grid;
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.assessment-card {
+  padding: 22px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.assessment-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.assessment-card-header h2 {
+  font-size: 20px;
+  margin: 6px 0;
+}
+
+.assessment-card-header p {
+  color: #64748b;
+}
+
+.assessment-type {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #2563eb !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.assessment-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.assessment-score strong {
+  font-size: 28px;
+  color: #1d4ed8;
+}
+
+.assessment-score span {
+  font-size: 14px;
+  color: #64748b;
+}
+
+@media (max-width: 600px) {
+  .assessment-card-header {
+    flex-direction: column;
+  }
+
+  .assessment-score {
+    align-items: flex-start;
+  }
+}
