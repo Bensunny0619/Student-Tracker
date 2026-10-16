@@ -15,6 +15,7 @@ import AddStudent from "./pages/AddStudent";
 import EditStudent from "./pages/EditStudent";
 import LessonHistory from "./pages/LessonHistory";
 import LogLesson from "./pages/LogLesson";
+import AddAssessment from "./pages/AddAssessment";
 
 import "./App.css";
 
@@ -60,10 +61,8 @@ export default function App() {
             <Route path="/students/:id/edit" element={<EditStudent />} />
             <Route path="/students/:id/lessons/new" element={<LogLesson />} />  
             <Route path="/students/:id/lessons" element={<LessonHistory />} />   
-            <Route
-  path="/students/:id/lessons/:lessonId/edit"
-  element={<LogLesson />}
-/>     
+            <Route path="/students/:id/lessons/:lessonId/edit" element={<LogLesson />} />    
+            <Route path="/students/:id/assessments/new" element={<AddAssessment />} /> 
           </Route>
 
           <Route path="*" element={<HomeRedirect />} />
