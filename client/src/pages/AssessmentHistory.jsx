@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from "react";
+import PerformanceSummary from "../components/PerformanceSummary";
 import { Link, useParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -33,6 +34,7 @@ export default function AssessmentHistory() {
 
   const [student, setStudent] = useState(null);
   const [assessments, setAssessments] = useState([]);
+  const [selectedSubject, setSelectedSubject] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -53,6 +55,25 @@ export default function AssessmentHistory() {
         );
 
         const data = await response.json();
+
+if (!response.ok) {
+  throw new Error(
+    data.message || "Unable to load assessments"
+  );
+}
+
+setStudent(data.student);
+setAssessments(data.assessments);
+
+  // Filter assessments based on the selected subject
+  const filteredAssessments =
+    selectedSubject === "All"
+      ? assessments
+      : assessments.filter(
+          (assessment) =>
+            assessment.subject === selectedSubject
+        );
+
 
         if (!response.ok) {
           throw new Error(
@@ -77,6 +98,26 @@ export default function AssessmentHistory() {
 
     return () => controller.abort();
   }, [id]);
+
+  
+  // Get all available subjects
+  const subjects = [
+    ...new Set(
+      assessments
+        .map((assessment) => assessment.subject)
+        .filter(Boolean)
+    ),
+  ].sort((a, b) => a.localeCompare(b));
+
+  // Filter assessments by selected subject
+  const filteredAssessments =
+    selectedSubject === "All"
+      ? assessments
+      : assessments.filter(
+          (assessment) =>
+            assessment.subject === selectedSubject
+        );
+
 
   if (loading) {
     return (
@@ -122,17 +163,54 @@ export default function AssessmentHistory() {
         </Link>
       </div>
 
-        <ProgressChart assessments={assessments} />
-
         
+<div className="assessment-filter-bar">
+  <div>
+    <h2>Performance Analysis</h2>
+    <p>Review results by subject</p>
+  </div>
+
+  <div className="assessment-filter-control">
+    <label htmlFor="subject-filter">
+      Subject
+    </label>
+
+    <select
+      id="subject-filter"
+      value={selectedSubject}
+      onChange={(event) =>
+        setSelectedSubject(event.target.value)
+      }
+    >
+      <option value="All">All Subjects</option>
+
+      {subjects.map((subject) => (
+        <option key={subject} value={subject}>
+          {subject}
+        </option>
+      ))}
+    </select>
+  </div>
+</div>
+
+<PerformanceSummary
+  assessments={filteredAssessments}
+/>
+
+<ProgressChart
+  assessments={filteredAssessments}
+/>
+
+
+
       <p className="student-results-count">
-        {assessments.length} recorded{" "}
-        {assessments.length === 1
-          ? "assessment"
-          : "assessments"}
+        {filteredAssessments.length} recorded{" "}
+{filteredAssessments.length === 1
+  ? "assessment"
+  : "assessments"}
       </p>
 
-      {assessments.length === 0 ? (
+      {filteredAssessments.length === 0 ? (
         <div className="empty-state">
           <ClipboardList size={38} />
           <h2>No assessments recorded yet</h2>
@@ -143,7 +221,7 @@ export default function AssessmentHistory() {
         </div>
       ) : (
         <div className="assessment-list">
-          {assessments.map((assessment) => (
+        {filteredAssessments.map((assessment) => (
             <article
               className="assessment-card"
               key={assessment.id}

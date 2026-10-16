@@ -828,3 +828,118 @@
     height: 260px;
   }
 }
+
+
+
+/* Performance Overview */
+
+.performance-summary {
+  margin: 24px 0;
+}
+
+.performance-summary h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #0f172a;
+}
+
+.performance-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.performance-summary-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.performance-summary-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.performance-summary-card strong {
+  font-size: 26px;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+/* Subject Filter */
+
+.assessment-filter-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.assessment-filter-bar h2 {
+  font-size: 20px;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.assessment-filter-bar p {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.assessment-filter-control {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.assessment-filter-control label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.assessment-filter-control select {
+  min-width: 180px;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.assessment-filter-control select:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Responsive layout */
+
+@media (max-width: 900px) {
+  .performance-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .performance-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .assessment-filter-control,
+  .assessment-filter-control select {
+    width: 100%;
+  }
+}
