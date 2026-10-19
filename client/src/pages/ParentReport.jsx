@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, FileText } from "lucide-react";
+import { ArrowLeft, FileText, Printer } from "lucide-react";
 
 function formatPercentage(value) {
   if (value === null || value === undefined) {
@@ -16,6 +16,7 @@ export default function ParentReport() {
 
   const [student, setStudent] = useState(null);
   const [summary, setSummary] = useState(null);
+  const [assessments, setAssessments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -45,6 +46,7 @@ export default function ParentReport() {
 
         setStudent(data.student);
         setSummary(data.summary);
+        setAssessments(data.assessment_trend || []);
       } catch (err) {
         if (err.name !== "AbortError") {
           setError(err.message);
@@ -79,9 +81,80 @@ export default function ParentReport() {
         <Link to={`/students/${id}/progress`}>
           Back to Student Progress
         </Link>
+
+        
+<div className="parent-report-toolbar">
+  <button
+    type="button"
+    className="parent-report-print-btn"
+    onClick={() => window.print()}
+  >
+    <Printer size={18} />
+    Print / Save as PDF
+  </button>
+</div>
+
       </main>
     );
   }
+
+  
+const topicGroups = {};
+
+assessments.forEach((assessment) => {
+  const topic = assessment.topic?.trim() || "Unspecified Topic";
+  const score = Number(assessment.percentage);
+
+  if (
+    assessment.percentage === null ||
+    assessment.percentage === undefined ||
+    !Number.isFinite(score)
+  ) {
+    return;
+  }
+
+  const key = `${assessment.subject || ""}:${topic}`.toLowerCase();
+
+  if (!topicGroups[key]) {
+    topicGroups[key] = {
+      topic,
+      subject: assessment.subject || "Unspecified Subject",
+      scores: [],
+    };
+  }
+
+  topicGroups[key].scores.push(score);
+});
+
+const topicPerformance = Object.values(topicGroups).map(
+  ({ topic, subject, scores }) => {
+    const average =
+      scores.reduce((sum, score) => sum + score, 0) /
+      scores.length;
+
+    return {
+      topic,
+      subject,
+      average,
+      count: scores.length,
+    };
+  }
+);
+
+const strongTopics = topicPerformance
+  .filter((item) => item.average >= 80)
+  .sort((a, b) => b.average - a.average);
+
+const weakTopics = topicPerformance
+  .filter((item) => item.average < 60)
+  .sort((a, b) => a.average - b.average);
+
+const developingTopics = topicPerformance
+  .filter(
+    (item) => item.average >= 60 && item.average < 80
+  )
+  .sort((a, b) => a.average - b.average);
+
 
   return (
     <main className="students-page">
@@ -138,6 +211,96 @@ export default function ParentReport() {
             </strong>
           </div>
         </div>
+
+        
+<div className="parent-report-analysis">
+  <section className="parent-report-analysis-section">
+    <h2>Areas of Strength</h2>
+
+    {strongTopics.length === 0 ? (
+      <p>
+        No topics have reached the strong performance
+        threshold yet.
+      </p>
+    ) : (
+      <ul>
+        {strongTopics.map((item) => (
+          <li key={`${item.subject}-${item.topic}`}>
+            <strong>{item.topic}</strong>
+            {" ("}{item.subject}{")"}
+            {" — "}
+            {formatPercentage(item.average)}
+            {" average across "}
+            {item.count}
+            {" assessment"}
+            {item.count === 1 ? "" : "s"}
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+
+  <section className="parent-report-analysis-section">
+    <h2>Areas Needing Improvement</h2>
+
+    {weakTopics.length === 0 ? (
+      <p>
+        No topics currently fall below the
+        60% performance threshold.
+      </p>
+    ) : (
+      <ul>
+        {weakTopics.map((item) => (
+          <li key={`${item.subject}-${item.topic}`}>
+            <strong>{item.topic}</strong>
+            {" ("}{item.subject}{")"}
+            {" — "}
+            {formatPercentage(item.average)}
+            {" average"}
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+
+  <section className="parent-report-analysis-section">
+    <h2>Recommended Next Steps</h2>
+
+    {weakTopics.length > 0 ? (
+      <ul>
+        {weakTopics.map((item) => (
+          <li key={`${item.subject}-${item.topic}`}>
+            Review <strong>{item.topic}</strong> using
+            guided examples, targeted practice,
+            and a follow-up assessment.
+          </li>
+        ))}
+      </ul>
+    ) : developingTopics.length > 0 ? (
+      <ul>
+        {developingTopics.map((item) => (
+          <li key={`${item.subject}-${item.topic}`}>
+            Continue practising{" "}
+            <strong>{item.topic}</strong> with
+            mixed exercises and short quizzes.
+          </li>
+        ))}
+      </ul>
+    ) : strongTopics.length > 0 ? (
+      <p>
+        Continue introducing challenging questions,
+        real-world applications, and periodic revision
+        to maintain strong performance.
+      </p>
+    ) : (
+      <p>
+        Record additional assessments to generate
+        personalized learning recommendations.
+      </p>
+    )}
+  </section>
+</div>
+
 
         <p className="parent-report-note">
           This report summarizes the student's recorded
