@@ -23,6 +23,15 @@ function formatPercentage(value) {
 export default function StudentProgress() {
   const { id } = useParams();
 
+  const [period, setPeriod] = useState("all");
+const [startDate, setStartDate] = useState("");
+const [endDate, setEndDate] = useState("");
+const [filterError, setFilterError] = useState("");
+
+const [appliedFilter, setAppliedFilter] = useState({
+  period: "all",
+});
+
   const [student, setStudent] = useState(null);
   const [summary, setSummary] = useState(null);
   const [recentActivity, setRecentActivity] = useState(null);
@@ -37,13 +46,22 @@ export default function StudentProgress() {
         setLoading(true);
         setError("");
 
-        const response = await fetch(
-          `/api/students/${id}/progress`,
-          {
-            credentials: "include",
-            signal: controller.signal,
-          }
-        );
+       const params = new URLSearchParams({
+  period: appliedFilter.period,
+});
+
+if (appliedFilter.period === "custom") {
+  params.set("startDate", appliedFilter.startDate);
+  params.set("endDate", appliedFilter.endDate);
+}
+
+const response = await fetch(
+  `/api/students/${id}/progress?${params.toString()}`,
+  {
+    credentials: "include",
+    signal: controller.signal,
+  }
+);
 
         const data = await response.json();
 
@@ -70,7 +88,39 @@ export default function StudentProgress() {
     loadProgress();
 
     return () => controller.abort();
-  }, [id]);
+}, [id, appliedFilter]);
+
+
+function handlePeriodChange(event) {
+  const selectedPeriod = event.target.value;
+
+  setPeriod(selectedPeriod);
+  setFilterError("");
+
+  if (selectedPeriod !== "custom") {
+    setAppliedFilter({ period: selectedPeriod });
+  }
+}
+
+function handleApplyCustomFilter() {
+  if (!startDate || !endDate) {
+    setFilterError("Please select both start and end dates.");
+    return;
+  }
+
+  if (startDate > endDate) {
+    setFilterError("Start date cannot be after end date.");
+    return;
+  }
+
+  setFilterError("");
+
+  setAppliedFilter({
+    period: "custom",
+    startDate,
+    endDate,
+  });
+}
 
   if (loading) {
     return (
@@ -141,6 +191,78 @@ export default function StudentProgress() {
           <p>Grade {student?.grade}</p>
         </div>
       </div>
+
+
+      
+<section className="student-progress-section">
+  <h2>Filter Progress Report</h2>
+
+  <div className="progress-filter-controls">
+    <label htmlFor="progress-period">
+      Report Period
+    </label>
+
+    <select
+      id="progress-period"
+      value={period}
+      onChange={handlePeriodChange}
+    >
+      <option value="all">All Time</option>
+      <option value="7">Last 7 Days</option>
+      <option value="30">Last 30 Days</option>
+      <option value="90">Last 90 Days</option>
+      <option value="custom">Custom Date Range</option>
+    </select>
+
+    {period === "custom" && (
+      <div className="progress-custom-dates">
+        <div>
+          <label htmlFor="progress-start-date">
+            Start Date
+          </label>
+
+          <input
+            id="progress-start-date"
+            type="date"
+            value={startDate}
+            onChange={(event) =>
+              setStartDate(event.target.value)
+            }
+          />
+        </div>
+
+        <div>
+          <label htmlFor="progress-end-date">
+            End Date
+          </label>
+
+          <input
+            id="progress-end-date"
+            type="date"
+            value={endDate}
+            onChange={(event) =>
+              setEndDate(event.target.value)
+            }
+          />
+        </div>
+
+        <button
+          type="button"
+          onClick={handleApplyCustomFilter}
+        >
+          Apply Filter
+        </button>
+      </div>
+    )}
+
+    {filterError && (
+      <p className="error-message" role="alert">
+        {filterError}
+      </p>
+    )}
+  </div>
+</section>
+
 
       <section className="student-progress-section">
         <h2>Performance Summary</h2>

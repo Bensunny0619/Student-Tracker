@@ -7,13 +7,70 @@ const router = express.Router({ mergeParams: true });
 
 router.use(requireAuth);
 
+function isValidDate(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+
+  const date = new Date(`${value}T12:00:00Z`);
+
+  return (
+    !Number.isNaN(date.getTime()) &&
+    date.toISOString().slice(0, 10) === value
+  );
+}
+
+function formatDate(date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function getDateRange(query) {
+  const period = query.period || "all";
+
+  if (period === "all") {
+    return { period, startDate: null, endDate: null };
+  }
+
+  if (["7", "30", "90"].includes(period)) {
+    const today = new Date();
+    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    start.setDate(start.getDate() - (Number(period) - 1));
+
+    return {
+      period,
+      startDate: formatDate(start),
+      endDate: formatDate(today),
+    };
+  }
+
+  if (period === "custom") {
+    const { startDate, endDate } = query;
+
+    if (!isValidDate(startDate) || !isValidDate(endDate)) {
+      throw new Error("Enter valid start and end dates in YYYY-MM-DD format");
+    }
+
+    if (startDate > endDate) {
+      throw new Error("Start date cannot be after end date");
+    }
+
+    return { period, startDate, endDate };
+  }
+
+  throw new Error("Invalid period. Use 7, 30, 90, all, or custom");
+}
+
 // GET /api/students/:id/progress
 router.get("/", async (req, res) => {
   try {
     const studentId = Number(req.params.id);
     const tutorId = req.session.tutorId;
 
-    // 1. Validate student ID
     if (!Number.isSafeInteger(studentId) || studentId < 1) {
       return res.status(400).json({
         success: false,
@@ -21,7 +78,17 @@ router.get("/", async (req, res) => {
       });
     }
 
-    // 2. Confirm tutor is active
+    let dateRange;
+
+    try {
+      dateRange = getDateRange(req.query);
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
     const tutor = await db("tutors")
       .where({
         id: tutorId,
@@ -36,7 +103,6 @@ router.get("/", async (req, res) => {
       });
     }
 
-    // 3. Confirm student belongs to tutor
     const student = await db("students")
       .where({
         id: studentId,
@@ -51,43 +117,48 @@ router.get("/", async (req, res) => {
       });
     }
 
-    // 4. Retrieve the student's lessons
-    const lessons = await db("lessons")
-      .where({ student_id: studentId })
+    // Apply the same date range to lessons and assessments.
+    const lessonQuery = db("lessons")
+      .where({ student_id: studentId });
+
+    const assessmentQuery = db("assessments")
+      .where({ student_id: studentId });
+
+    if (dateRange.startDate && dateRange.endDate) {
+      lessonQuery.whereBetween("lesson_date", [
+        dateRange.startDate,
+        dateRange.endDate,
+      ]);
+
+      assessmentQuery.whereBetween("assessment_date", [
+        dateRange.startDate,
+        dateRange.endDate,
+      ]);
+    }
+
+    const lessons = await lessonQuery
+      .orderBy("lesson_date", "desc")
       .orderBy("id", "desc")
       .select("*");
 
-    // 5. Retrieve the student's assessments
-    const assessments = await db("assessments")
-      .where({ student_id: studentId })
+    const assessments = await assessmentQuery
       .orderBy("assessment_date", "desc")
       .orderBy("id", "desc")
       .select("*");
 
-    // 6. Calculate assessment statistics
     const percentages = assessments
-      .filter(
-        (assessment) =>
-          Number(assessment.total_marks) > 0
-      )
+      .filter((assessment) => Number(assessment.total_marks) > 0)
       .map(
         (assessment) =>
-          (Number(assessment.score) /
-            Number(assessment.total_marks)) *
-          100
+          (Number(assessment.score) / Number(assessment.total_marks)) * 100
       );
-
-    const totalAssessments = assessments.length;
-    const totalLessons = lessons.length;
 
     const averageScore =
       percentages.length > 0
         ? Number(
             (
-              percentages.reduce(
-                (sum, percentage) => sum + percentage,
-                0
-              ) / percentages.length
+              percentages.reduce((sum, percentage) => sum + percentage, 0) /
+              percentages.length
             ).toFixed(2)
           )
         : null;
@@ -102,29 +173,57 @@ router.get("/", async (req, res) => {
         ? Number(Math.min(...percentages).toFixed(2))
         : null;
 
-    // 7. Get recent lesson and assessment
+    
+      
+const assessmentTrend = assessments
+  .filter((assessment) => Number(assessment.total_marks) > 0)
+  .map((assessment) => ({
+    id: assessment.id,
+    assessment_date: assessment.assessment_date,
+    subject: assessment.subject,
+    topic: assessment.topic,
+    assessment_type: assessment.assessment_type,
+    percentage: Number(
+      (
+        (Number(assessment.score) /
+          Number(assessment.total_marks)) *
+        100
+      ).toFixed(2)
+    ),
+  }))
+  .reverse();
+
+
+    
     const latestLesson = lessons[0] || null;
 
     const latestAssessment = assessments[0]
       ? {
           ...assessments[0],
-          percentage: Number(
-            (
-              (Number(assessments[0].score) /
-                Number(assessments[0].total_marks)) *
-              100
-            ).toFixed(2)
-          ),
+          percentage:
+            Number(assessments[0].total_marks) > 0
+              ? Number(
+                  (
+                    (Number(assessments[0].score) /
+                      Number(assessments[0].total_marks)) *
+                    100
+                  ).toFixed(2)
+                )
+              : null,
         }
       : null;
 
-    // 8. Return combined progress summary
     return res.status(200).json({
       success: true,
       student,
+      filters: {
+        period: dateRange.period,
+        start_date: dateRange.startDate,
+        end_date: dateRange.endDate,
+      },
       summary: {
-        total_lessons: totalLessons,
-        total_assessments: totalAssessments,
+        total_lessons: lessons.length,
+        total_assessments: assessments.length,
         average_score: averageScore,
         highest_score: highestScore,
         lowest_score: lowestScore,
@@ -133,12 +232,10 @@ router.get("/", async (req, res) => {
         latest_lesson: latestLesson,
         latest_assessment: latestAssessment,
       },
+      assessment_trend: assessmentTrend,
     });
   } catch (error) {
-    console.error(
-      "Failed to retrieve student progress:",
-      error
-    );
+    console.error("Failed to retrieve student progress:", error);
 
     return res.status(500).json({
       success: false,
