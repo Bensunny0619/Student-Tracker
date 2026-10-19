@@ -285,6 +285,57 @@ function calculatePerformanceInsight(assessments) {
 const performanceInsight =
   calculatePerformanceInsight(validAssessments);
 
+
+const topicGroups = {};
+
+filteredAssessments.forEach((assessment) => {
+  const topic = assessment.topic?.trim() || "Unspecified Topic";
+  const score = Number(assessment.percentage);
+
+  if (
+    assessment.percentage === null ||
+    assessment.percentage === undefined ||
+    !Number.isFinite(score)
+  ) {
+    return;
+  }
+
+  const key = topic.toLowerCase();
+
+  if (!topicGroups[key]) {
+    topicGroups[key] = {
+      topic,
+      scores: [],
+    };
+  }
+
+  topicGroups[key].scores.push(score);
+});
+
+const topicPerformance = Object.values(topicGroups)
+  .map(({ topic, scores }) => {
+    const average =
+      scores.reduce((sum, score) => sum + score, 0) /
+      scores.length;
+
+    let status = "Needs Attention";
+
+    if (average >= 80) {
+      status = "Strong";
+    } else if (average >= 60) {
+      status = "Developing";
+    }
+
+    return {
+      topic,
+      average: Number(average.toFixed(2)),
+      count: scores.length,
+      status,
+    };
+  })
+  .sort((a, b) => a.average - b.average);
+
+
 const chartData = filteredAssessments.map((assessment, index) => ({
   ...assessment,
   label: `#${index + 1}`,
@@ -485,7 +536,31 @@ const chartData = filteredAssessments.map((assessment, index) => ({
   </div>
 </div>
 
+<div className="performance-insight-card">
+  <div className="performance-insight-header">
+    <h3>Performance Insight</h3>
 
+    <span
+      className={`performance-insight-status ${
+        performanceInsight.status
+          .toLowerCase()
+          .replace(/\s+/g, "-")
+      }`}
+    >
+      {performanceInsight.status}
+    </span>
+  </div>
+
+  {performanceInsight.change !== null && (
+    <p className="performance-insight-change">
+      {performanceInsight.change > 0 ? "+" : ""}
+      {performanceInsight.change.toFixed(2)}
+      {" percentage points"}
+    </p>
+  )}
+
+  <p>{performanceInsight.message}</p>
+</div>
 
   {chartData.length > 0 ? (
     <div className="student-trend-chart">
@@ -546,6 +621,70 @@ const chartData = filteredAssessments.map((assessment, index) => ({
     </p>
   )}
 </section>
+
+
+
+<section className="student-progress-section">
+  <h2>Topic Performance Analysis</h2>
+
+  <p>
+    Identify topics that need more practice based on
+    assessment performance.
+  </p>
+
+  {topicPerformance.length === 0 ? (
+    <p>
+      No topic performance data available for the
+      selected filters.
+    </p>
+  ) : (
+    <div className="topic-performance-list">
+      {topicPerformance.map((item) => (
+        <div
+          className="topic-performance-item"
+          key={item.topic.toLowerCase()}
+        >
+          <div className="topic-performance-heading">
+            <h3>{item.topic}</h3>
+
+            <strong>
+              {formatPercentage(item.average)}
+            </strong>
+          </div>
+
+          <div className="topic-progress-track">
+            <div
+              className={`topic-progress-fill ${
+                item.status === "Strong"
+                  ? "strong"
+                  : item.status === "Developing"
+                  ? "developing"
+                  : "needs-attention"
+              }`}
+              style={{
+                width: `${Math.max(
+                  0,
+                  Math.min(100, item.average)
+                )}%`,
+              }}
+            />
+          </div>
+
+          <div className="topic-performance-footer">
+            <span>
+              {item.count} assessment
+              {item.count === 1 ? "" : "s"}
+            </span>
+
+            <span>{item.status}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</section>
+
+
 
 
 
