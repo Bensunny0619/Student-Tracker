@@ -11,6 +11,15 @@ import {
   Plus,
   History,
 } from "lucide-react";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from "recharts";
 
 function formatPercentage(value) {
   if (value === null || value === undefined) {
@@ -27,7 +36,8 @@ export default function StudentProgress() {
 const [startDate, setStartDate] = useState("");
 const [endDate, setEndDate] = useState("");
 const [filterError, setFilterError] = useState("");
-
+const [assessmentTrend, setAssessmentTrend] = useState([]);
+const [selectedSubject, setSelectedSubject] = useState("all");
 const [appliedFilter, setAppliedFilter] = useState({
   period: "all",
 });
@@ -74,6 +84,7 @@ const response = await fetch(
         setStudent(data.student);
         setSummary(data.summary);
         setRecentActivity(data.recent_activity);
+        setAssessmentTrend(data.assessment_trend || []);
       } catch (err) {
         if (err.name !== "AbortError") {
           setError(err.message);
@@ -169,6 +180,64 @@ function handleApplyCustomFilter() {
       icon: TrendingDown,
     },
   ];
+
+
+
+const availableSubjects = [
+  ...new Set(
+    assessmentTrend
+      .map((assessment) => assessment.subject)
+      .filter(Boolean)
+  ),
+].sort((a, b) => a.localeCompare(b));
+
+const filteredAssessments = assessmentTrend.filter(
+  (assessment) =>
+    selectedSubject === "all" ||
+    assessment.subject === selectedSubject
+);
+
+
+const subjectScores = filteredAssessments
+  .map((assessment) => Number(assessment.percentage))
+  .filter((score) => Number.isFinite(score));
+
+const subjectStats = {
+  total: subjectScores.length,
+  average:
+    subjectScores.length > 0
+      ? subjectScores.reduce((sum, score) => sum + score, 0) /
+        subjectScores.length
+      : null,
+  highest:
+    subjectScores.length > 0
+      ? Math.max(...subjectScores)
+      : null,
+  lowest:
+    subjectScores.length > 0
+      ? Math.min(...subjectScores)
+      : null,
+};
+
+
+const chartData = filteredAssessments.map((assessment, index) => ({
+  ...assessment,
+  label: `#${index + 1}`,
+  score: assessment.percentage,
+  displayDate: new Date(assessment.assessment_date).toLocaleDateString(
+    "en-CA",
+    {
+      timeZone: "UTC",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }
+  ),
+}));
+
+
+
+
 
   const latestLesson = recentActivity?.latest_lesson;
   const latestAssessment = recentActivity?.latest_assessment;
@@ -287,6 +356,133 @@ function handleApplyCustomFilter() {
           })}
         </div>
       </section>
+
+
+      
+<section className="student-progress-section">
+  <h2>Assessment Performance Trend</h2>
+
+  <p>
+    Track assessment scores over time for the selected
+    reporting period.
+  </p>
+
+
+
+<div className="progress-subject-filter">
+  <label htmlFor="progress-subject">
+    Filter by Subject
+  </label>
+
+  <select
+    id="progress-subject"
+    value={selectedSubject}
+    onChange={(event) =>
+      setSelectedSubject(event.target.value)
+    }
+  >
+    <option value="all">All Subjects</option>
+
+    {availableSubjects.map((subject) => (
+      <option key={subject} value={subject}>
+        {subject}
+      </option>
+    ))}
+  </select>
+</div>
+
+<p>
+  Showing {chartData.length} assessment
+  {chartData.length === 1 ? "" : "s"}.
+</p>
+
+
+
+<div className="subject-stats-grid">
+  <div className="subject-stat-card">
+    <span>Total Assessments</span>
+    <strong>{subjectStats.total}</strong>
+  </div>
+
+  <div className="subject-stat-card">
+    <span>Average Score</span>
+    <strong>{formatPercentage(subjectStats.average)}</strong>
+  </div>
+
+  <div className="subject-stat-card">
+    <span>Highest Score</span>
+    <strong>{formatPercentage(subjectStats.highest)}</strong>
+  </div>
+
+  <div className="subject-stat-card">
+    <span>Lowest Score</span>
+    <strong>{formatPercentage(subjectStats.lowest)}</strong>
+  </div>
+</div>
+
+
+
+  {chartData.length > 0 ? (
+    <div className="student-trend-chart">
+      <ResponsiveContainer width="100%" height={320}>
+        <LineChart
+          data={chartData}
+          margin={{
+            top: 20,
+            right: 25,
+            left: 0,
+            bottom: 10,
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+
+          <XAxis
+            dataKey="label"
+            label={{
+              value: "Assessment",
+              position: "insideBottom",
+              offset: -5,
+            }}
+          />
+
+          <YAxis
+            domain={[0, 100]}
+            tickFormatter={(value) => `${value}%`}
+          />
+
+          <Tooltip
+            formatter={(value) => [
+              `${Number(value).toFixed(2)}%`,
+              "Score",
+            ]}
+            labelFormatter={(_, payload) => {
+              const assessment = payload?.[0]?.payload;
+
+              return assessment
+                ? `${assessment.topic} — ${assessment.displayDate}`
+                : "Assessment";
+            }}
+          />
+
+          <Line
+            type="monotone"
+            dataKey="score"
+            stroke="#2563eb"
+            strokeWidth={3}
+            dot={{ r: 5 }}
+            activeDot={{ r: 7 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  ) : (
+    <p>
+      No assessments available for this reporting period.
+    </p>
+  )}
+</section>
+
+
 
       <section className="student-progress-section">
         <h2>Recent Activity</h2>
