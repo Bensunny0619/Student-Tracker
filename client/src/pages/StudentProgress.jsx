@@ -219,6 +219,71 @@ const subjectStats = {
       : null,
 };
 
+const validAssessments = filteredAssessments.filter(
+  (assessment) =>
+    Number.isFinite(Number(assessment.percentage)) &&
+    assessment.percentage !== null
+);
+
+function calculateAverage(items) {
+  if (items.length === 0) return null;
+
+  const total = items.reduce(
+    (sum, assessment) => sum + Number(assessment.percentage),
+    0
+  );
+
+  return total / items.length;
+}
+
+function calculatePerformanceInsight(assessments) {
+  if (assessments.length < 2) {
+    return {
+      status: "Insufficient Data",
+      change: null,
+      message:
+        "Record at least two assessments to generate a performance insight.",
+    };
+  }
+
+  const midpoint = Math.floor(assessments.length / 2);
+
+  const earlierAssessments = assessments.slice(0, midpoint);
+  const recentAssessments = assessments.slice(midpoint);
+
+  const earlierAverage = calculateAverage(earlierAssessments);
+  const recentAverage = calculateAverage(recentAssessments);
+
+  const change = recentAverage - earlierAverage;
+
+  if (change > 5) {
+    return {
+      status: "Improving",
+      change,
+      message:
+        "Recent assessment scores are higher than earlier scores. Keep reinforcing the student's progress.",
+    };
+  }
+
+  if (change < -5) {
+    return {
+      status: "Declining",
+      change,
+      message:
+        "Recent assessment scores are lower than earlier scores. Review difficult topics and consider additional practice.",
+    };
+  }
+
+  return {
+    status: "Stable",
+    change,
+    message:
+      "Assessment scores are relatively consistent. Continue monitoring progress and introducing appropriate challenges.",
+  };
+}
+
+const performanceInsight =
+  calculatePerformanceInsight(validAssessments);
 
 const chartData = filteredAssessments.map((assessment, index) => ({
   ...assessment,
