@@ -335,6 +335,40 @@ const topicPerformance = Object.values(topicGroups)
   })
   .sort((a, b) => a.average - b.average);
 
+  
+const tutorRecommendations = topicPerformance.map((item) => {
+  let priority;
+  let recommendation;
+
+  if (item.status === "Needs Attention") {
+    priority = "High";
+    recommendation =
+      "Revisit the fundamentals of this topic. Use guided examples, " +
+      "assign targeted practice questions, and reassess the student " +
+      "after additional instruction.";
+  } else if (item.status === "Developing") {
+    priority = "Medium";
+    recommendation =
+      "Review common mistakes and provide mixed practice questions. " +
+      "Use a short follow-up quiz to check understanding.";
+  } else {
+    priority = "Low";
+    recommendation =
+      "Introduce more challenging questions and real-world applications. " +
+      "Periodically revisit this topic to maintain mastery.";
+  }
+
+  return {
+    topic: item.topic,
+    average: item.average,
+    count: item.count,
+    status: item.status,
+    priority,
+    recommendation,
+  };
+});
+
+
 
 const chartData = filteredAssessments.map((assessment, index) => ({
   ...assessment,
@@ -684,6 +718,58 @@ const chartData = filteredAssessments.map((assessment, index) => ({
   )}
 </section>
 
+
+
+
+
+
+<section className="student-progress-section">
+  <h2>Personalized Tutor Recommendations</h2>
+
+  <p>
+    Suggested teaching actions based on the student's
+    assessment performance.
+  </p>
+
+  {tutorRecommendations.length === 0 ? (
+    <p>
+      No recommendations available for the selected filters.
+      Record assessments to generate teaching suggestions.
+    </p>
+  ) : (
+    <div className="tutor-recommendations-list">
+      {tutorRecommendations.map((item) => (
+        <div
+          className="tutor-recommendation-card"
+          key={item.topic.toLowerCase()}
+        >
+          <div className="tutor-recommendation-header">
+            <h3>{item.topic}</h3>
+
+            <span
+              className={`tutor-priority ${
+                item.priority.toLowerCase()
+              }`}
+            >
+              {item.priority} Priority
+            </span>
+          </div>
+
+          <p className="tutor-recommendation-meta">
+            Average: {formatPercentage(item.average)}
+            {" · "}
+            {item.count} assessment
+            {item.count === 1 ? "" : "s"}
+            {" · "}
+            {item.status}
+          </p>
+
+          <p>{item.recommendation}</p>
+        </div>
+      ))}
+    </div>
+  )}
+</section>
 
 
 

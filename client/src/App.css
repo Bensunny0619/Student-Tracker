@@ -1311,3 +1311,60 @@
   color: #64748b;
   font-size: 13px;
 }
+
+
+
+.tutor-recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.tutor-recommendation-card {
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.tutor-recommendation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.tutor-recommendation-header h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.tutor-recommendation-meta {
+  color: #64748b;
+  font-size: 13px;
+  margin: 10px 0;
+}
+
+.tutor-priority {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tutor-priority.high {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.tutor-priority.medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.tutor-priority.low {
+  background: #dcfce7;
+  color: #166534;
+}
