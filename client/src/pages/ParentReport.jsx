@@ -71,32 +71,21 @@ export default function ParentReport() {
     );
   }
 
-  if (error || !summary) {
-    return (
-      <main className="students-page">
-        <p className="error-message" role="alert">
-          {error || "Report unavailable"}
-        </p>
+ 
+if (error || !summary) {
+  return (
+    <main className="students-page">
+      <p className="error-message" role="alert">
+        {error || "Report unavailable"}
+      </p>
 
-        <Link to={`/students/${id}/progress`}>
-          Back to Student Progress
-        </Link>
+      <Link to={`/students/${id}/progress`}>
+        Back to Student Progress
+      </Link>
+    </main>
+  );
+}
 
-        
-<div className="parent-report-toolbar">
-  <button
-    type="button"
-    className="parent-report-print-btn"
-    onClick={() => window.print()}
-  >
-    <Printer size={18} />
-    Print / Save as PDF
-  </button>
-</div>
-
-      </main>
-    );
-  }
 
   
 const topicGroups = {};
@@ -113,7 +102,10 @@ assessments.forEach((assessment) => {
     return;
   }
 
-  const key = `${assessment.subject || ""}:${topic}`.toLowerCase();
+  const subject =
+  assessment.subject?.trim() || "Unspecified Subject";
+
+const key = `${subject}:${topic}`.toLowerCase();
 
   if (!topicGroups[key]) {
     topicGroups[key] = {
@@ -165,6 +157,20 @@ const developingTopics = topicPerformance
         <ArrowLeft size={18} />
         Back to Student Progress
       </Link>
+
+
+      
+<div className="parent-report-toolbar">
+  <button
+    type="button"
+    className="parent-report-print-btn"
+    onClick={() => window.print()}
+  >
+    <Printer size={18} />
+    Print / Save as PDF
+  </button>
+</div>
+
 
       <section className="parent-report">
         <div className="parent-report-header">
