@@ -9,6 +9,7 @@ import {
   Trophy,
   TrendingDown,
   Plus,
+  FileText,
   History,
 } from "lucide-react";
 import {
@@ -868,6 +869,14 @@ const chartData = filteredAssessments.map((assessment, index) => ({
             <Plus size={18} />
             Record Assessment
           </Link>
+
+          <Link
+  to={`/students/${id}/parent-report`}
+  className="student-action-link"
+>
+  <FileText size={18} />
+  Parent Progress Report
+</Link>
         </div>
       </section>
     </main>
