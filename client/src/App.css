@@ -1898,3 +1898,36 @@
     print-color-adjust: exact;
   }
 }
+
+
+
+.parent-report-feedback-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.parent-report-save-success {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #15803d;
+}
+
+.parent-report-feedback-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.parent-report-comment-editor textarea:disabled {
+  background: #f1f5f9;
+  cursor: wait;
+}
+
+@media print {
+  .parent-report-feedback-actions {
+    display: none !important;
+  }
+}
