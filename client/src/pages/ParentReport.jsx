@@ -14,6 +14,23 @@ function formatPercentage(value) {
 export default function ParentReport() {
   const { id } = useParams();
 
+  
+const [period, setPeriod] = useState("all");
+const [startDate, setStartDate] = useState("");
+const [endDate, setEndDate] = useState("");
+const [filterError, setFilterError] = useState("");
+
+const [appliedFilter, setAppliedFilter] = useState({
+  period: "all",
+});
+
+
+  const reportDate = new Date().toLocaleDateString("en-CA", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+
   const [student, setStudent] = useState(null);
   const [summary, setSummary] = useState(null);
   const [assessments, setAssessments] = useState([]);
@@ -28,13 +45,24 @@ export default function ParentReport() {
         setLoading(true);
         setError("");
 
-        const response = await fetch(
-          `/api/students/${id}/progress?period=all`,
-          {
-            credentials: "include",
-            signal: controller.signal,
-          }
-        );
+        
+const params = new URLSearchParams({
+  period: appliedFilter.period,
+});
+
+if (appliedFilter.period === "custom") {
+  params.set("startDate", appliedFilter.startDate);
+  params.set("endDate", appliedFilter.endDate);
+}
+
+const response = await fetch(
+  `/api/students/${id}/progress?${params.toString()}`,
+  {
+    credentials: "include",
+    signal: controller.signal,
+  }
+);
+
 
         const data = await response.json();
 
@@ -61,7 +89,42 @@ export default function ParentReport() {
     loadReport();
 
     return () => controller.abort();
-  }, [id]);
+}, [id, appliedFilter]);
+
+
+function handlePeriodChange(event) {
+  const selectedPeriod = event.target.value;
+
+  setPeriod(selectedPeriod);
+  setFilterError("");
+
+  if (selectedPeriod !== "custom") {
+    setAppliedFilter({ period: selectedPeriod });
+  }
+}
+
+function handleApplyCustomFilter() {
+  if (!startDate || !endDate) {
+    setFilterError("Please select both dates.");
+    return;
+  }
+
+  if (startDate > endDate) {
+    setFilterError(
+      "Start date cannot be after end date."
+    );
+    return;
+  }
+
+  setFilterError("");
+
+  setAppliedFilter({
+    period: "custom",
+    startDate,
+    endDate,
+  });
+}
+
 
   if (loading) {
     return (
@@ -159,6 +222,79 @@ const developingTopics = topicPerformance
       </Link>
 
 
+<div className="parent-report-filters">
+  <h2>Report Period</h2>
+
+  <div className="parent-report-filter-controls">
+    <div>
+      <label htmlFor="parent-report-period">
+        Select Period
+      </label>
+
+      <select
+        id="parent-report-period"
+        value={period}
+        onChange={handlePeriodChange}
+      >
+        <option value="all">All Recorded Dates</option>
+        <option value="7">Last 7 Days</option>
+        <option value="30">Last 30 Days</option>
+        <option value="90">Last 90 Days</option>
+        <option value="custom">Custom Date Range</option>
+      </select>
+    </div>
+
+    {period === "custom" && (
+      <>
+        <div>
+          <label htmlFor="parent-report-start">
+            Start Date
+          </label>
+
+          <input
+            id="parent-report-start"
+            type="date"
+            value={startDate}
+            onChange={(e) =>
+              setStartDate(e.target.value)
+            }
+          />
+        </div>
+
+        <div>
+          <label htmlFor="parent-report-end">
+            End Date
+          </label>
+
+          <input
+            id="parent-report-end"
+            type="date"
+            value={endDate}
+            onChange={(e) =>
+              setEndDate(e.target.value)
+            }
+          />
+        </div>
+
+        <button
+          type="button"
+          onClick={handleApplyCustomFilter}
+          className="parent-report-apply-btn"
+        >
+          Apply Filter
+        </button>
+      </>
+    )}
+  </div>
+
+  {filterError && (
+    <p className="parent-report-filter-error" role="alert">
+      {filterError}
+    </p>
+  )}
+</div>
+
+
       
 <div className="parent-report-toolbar">
   <button
@@ -173,15 +309,51 @@ const developingTopics = topicPerformance
 
 
       <section className="parent-report">
-        <div className="parent-report-header">
-          <FileText size={30} />
+        
+<div className="parent-report-header">
+  <div className="parent-report-brand">
+    <FileText size={34} />
 
-          <div>
-            <p className="eyebrow">PARENT PROGRESS REPORT</p>
-            <h1>{student?.first_name}</h1>
-            <p>Grade {student?.grade}</p>
-          </div>
-        </div>
+    <div>
+      <p className="eyebrow">STUDENT PROGRESS TRACKER</p>
+      <h1>Student Progress Report</h1>
+      <p>Academic Performance & Learning Development</p>
+    </div>
+  </div>
+
+  <div className="parent-report-details">
+    <p>
+      <strong>Student:</strong> {student?.first_name}
+    </p>
+
+    <p>
+      <strong>Grade:</strong> {student?.grade}
+    </p>
+
+    <p>
+      <strong>Report Date:</strong> {reportDate}
+    </p>
+
+    
+const reportPeriodLabels = {
+  all: "All Recorded Dates",
+  7: "Last 7 Days",
+  30: "Last 30 Days",
+  90: "Last 90 Days",
+};
+
+const reportPeriodLabel =
+  appliedFilter.period === "custom"
+    ? `${appliedFilter.startDate} to ${appliedFilter.endDate}`
+    : reportPeriodLabels[appliedFilter.period];
+
+
+   <p>
+  <strong>Reporting Period:</strong> {reportPeriodLabel}
+</p>
+  </div>
+</div>
+
 
         <h2>Performance Summary</h2>
 
@@ -309,9 +481,35 @@ const developingTopics = topicPerformance
 
 
         <p className="parent-report-note">
-          This report summarizes the student's recorded
-          lessons and assessments across all available dates.
-        </p>
+  This report summarizes the student's recorded
+  lessons and assessments for the selected reporting period.
+</p>
+
+        
+<div className="parent-report-footer">
+  <p>
+    <strong>Understanding This Report</strong>
+  </p>
+
+  <p>
+    Topic performance is classified as Strong (80% and above),
+    Developing (60%–79.99%), or Needs Attention
+    (below 60%). These categories are tutoring guidelines
+    based on recorded assessments.
+  </p>
+
+  <p>
+    This report is intended to support communication
+    between tutors and parents. Assessment results
+    should be considered alongside classroom participation,
+    lesson observations, and individual learning needs.
+  </p>
+
+  <p className="parent-report-generated">
+    Generated on {reportDate}
+  </p>
+</div>
+
       </section>
     </main>
   );
