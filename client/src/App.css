@@ -1829,3 +1829,72 @@
     print-color-adjust: exact;
   }
 }
+
+
+
+.parent-report-comment-editor {
+  max-width: 950px;
+  margin: 20px auto;
+  padding: 24px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.parent-report-comment-editor h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.parent-report-comment-editor label {
+  font-weight: 600;
+  color: #334155;
+}
+
+.parent-report-comment-editor textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font: inherit;
+  resize: vertical;
+}
+
+.parent-report-feedback {
+  margin-top: 30px;
+}
+
+.parent-report-feedback section {
+  margin-top: 18px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.parent-report-feedback h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+
+.parent-report-feedback p {
+  margin: 0;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media print {
+  .parent-report-comment-editor {
+    display: none !important;
+  }
+
+  .parent-report-feedback section {
+    break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

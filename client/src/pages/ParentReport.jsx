@@ -47,6 +47,11 @@ export default function ParentReport() {
   const [assessments, setAssessments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [tutorComments, setTutorComments] = useState({
+    observations: "",
+    improvements: "",
+    goals: "",
+  });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -126,6 +131,15 @@ export default function ParentReport() {
       startDate,
       endDate,
     });
+  }
+
+  function handleCommentChange(event) {
+    const { name, value } = event.target;
+
+    setTutorComments((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
   }
 
   const reportPeriodLabel = formatDateRangeLabel(appliedFilter);
@@ -271,6 +285,50 @@ export default function ParentReport() {
             {filterError}
           </p>
         )}
+      </div>
+
+      <div className="parent-report-comment-editor">
+        <h2>Tutor's Personalized Feedback</h2>
+
+        <p>
+          Add your observations before generating the parent report.
+        </p>
+
+        <label htmlFor="tutor-observations">
+          Tutor's Observations
+        </label>
+        <textarea
+          id="tutor-observations"
+          name="observations"
+          rows={4}
+          value={tutorComments.observations}
+          onChange={handleCommentChange}
+          placeholder="Describe the student's participation, confidence, and progress..."
+        />
+
+        <label htmlFor="tutor-improvements">
+          Areas for Improvement
+        </label>
+        <textarea
+          id="tutor-improvements"
+          name="improvements"
+          rows={4}
+          value={tutorComments.improvements}
+          onChange={handleCommentChange}
+          placeholder="Describe the areas requiring additional practice..."
+        />
+
+        <label htmlFor="tutor-goals">
+          Goals for Next Month
+        </label>
+        <textarea
+          id="tutor-goals"
+          name="goals"
+          rows={4}
+          value={tutorComments.goals}
+          onChange={handleCommentChange}
+          placeholder="Describe the learning goals for the coming month..."
+        />
       </div>
 
       <div className="parent-report-toolbar">
@@ -428,6 +486,35 @@ export default function ParentReport() {
             )}
           </section>
         </div>
+
+        {Object.values(tutorComments).some(
+          (value) => value.trim() !== ""
+        ) && (
+          <div className="parent-report-feedback">
+            <h2>Tutor's Personalized Feedback</h2>
+
+            {tutorComments.observations.trim() && (
+              <section>
+                <h3>Tutor's Observations</h3>
+                <p>{tutorComments.observations}</p>
+              </section>
+            )}
+
+            {tutorComments.improvements.trim() && (
+              <section>
+                <h3>Areas for Improvement</h3>
+                <p>{tutorComments.improvements}</p>
+              </section>
+            )}
+
+            {tutorComments.goals.trim() && (
+              <section>
+                <h3>Goals for Next Month</h3>
+                <p>{tutorComments.goals}</p>
+              </section>
+            )}
+          </div>
+        )}
 
         <p className="parent-report-note">
           This report summarizes the student's recorded lessons and assessments
