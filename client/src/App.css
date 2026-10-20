@@ -1494,6 +1494,71 @@
 
 
 
+.parent-report-filter-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.parent-report-filter-section h2 {
+  margin: 0 0 16px;
+  font-size: 20px;
+  color: #0f172a;
+}
+
+.parent-report-filter-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 520px;
+}
+
+.parent-report-filter-controls label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.parent-report-filter-controls select,
+.parent-report-custom-dates input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  font: inherit;
+}
+
+.parent-report-custom-dates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.parent-report-custom-dates > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.parent-report-custom-dates button {
+  grid-column: 1 / -1;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.parent-report-custom-dates button:hover {
+  background: #1d4ed8;
+}
+
 .parent-report-toolbar {
   max-width: 950px;
   margin: 20px auto;
@@ -1521,35 +1586,11 @@
   background: #1d4ed8;
 }
 
-
-.parent-report-toolbar {
-  max-width: 950px;
-  margin: 20px auto;
-  display: flex;
-  justify-content: flex-end;
+@media (max-width: 480px) {
+  .parent-report-custom-dates {
+    grid-template-columns: 1fr;
+  }
 }
-
-.parent-report-print-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 12px 20px;
-  background: #2563eb;
-  color: #ffffff;
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.parent-report-print-btn:hover {
-  background: #1d4ed8;
-}
-
-
 
 @media print {
   @page {
@@ -1757,5 +1798,34 @@
 @media print {
   .parent-report-filters {
     display: none !important;
+  }
+}
+
+
+
+.parent-report-empty-notice {
+  padding: 18px;
+  margin-bottom: 24px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  color: #1e40af;
+}
+
+.parent-report-empty-notice strong {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.parent-report-empty-notice p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+@media print {
+  .parent-report-empty-notice {
+    break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }
