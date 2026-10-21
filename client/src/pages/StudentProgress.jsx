@@ -877,6 +877,14 @@ const chartData = filteredAssessments.map((assessment, index) => ({
   <FileText size={18} />
   Parent Progress Report
 </Link>
+
+<Link
+  to={`/students/${id}/parent-report/history`}
+  className="student-action-link"
+>
+  <History size={18} />
+  View Report History
+</Link>
         </div>
       </section>
     </main>

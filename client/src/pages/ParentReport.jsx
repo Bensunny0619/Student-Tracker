@@ -1,5 +1,5 @@
 ﻿import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, FileText, Printer } from "lucide-react";
 function formatPercentage(value) {
   if (value === null || value === undefined) {
@@ -56,17 +56,59 @@ function getReportDateRange(filter) {
 }
 export default function ParentReport() {
   const { id } = useParams();
-  const [period, setPeriod] = useState("all");
+  const [searchParams] = useSearchParams();
+
+  const urlStartDate = searchParams.get("startDate");
+  const urlEndDate = searchParams.get("endDate");
+
+  const validDate = (value) => {
+    if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return false;
+    }
+
+    const [year, month, day] = value.split("-").map(Number);
+    const date = new Date(0);
+    date.setFullYear(year, month - 1, day);
+
+    return (
+      date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day
+    );
+  };
+
+  const hasValidUrlDates =
+    validDate(urlStartDate) &&
+    validDate(urlEndDate) &&
+    urlStartDate <= urlEndDate;
+
+  const initialFilter = hasValidUrlDates
+    ? {
+        period: "custom",
+        startDate: urlStartDate,
+        endDate: urlEndDate,
+      }
+    : { period: "all" };
+
+
+ const [period, setPeriod] = useState(
+  hasValidUrlDates ? "custom" : "all"
+);
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   });
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [filterError, setFilterError] = useState("");
-  const [appliedFilter, setAppliedFilter] = useState({
-    period: "all",
-  });
+ const [startDate, setStartDate] = useState(
+  hasValidUrlDates ? urlStartDate : ""
+);
+
+const [endDate, setEndDate] = useState(
+  hasValidUrlDates ? urlEndDate : ""
+);
+
+const [filterError, setFilterError] = useState("");
+
+  const [appliedFilter, setAppliedFilter] = useState(initialFilter);
   const reportDate = new Date().toLocaleDateString("en-CA", {
     year: "numeric",
     month: "long",

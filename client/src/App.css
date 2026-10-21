@@ -1931,3 +1931,260 @@
     display: none !important;
   }
 }
+
+
+
+/* Parent Report History */
+
+.report-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.report-history-header h1 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 8px;
+}
+
+.report-history-header p {
+  color: #64748b;
+  margin: 0;
+}
+
+.report-history-new-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.report-history-new-link:hover {
+  background: #1d4ed8;
+}
+
+.report-history-count {
+  margin: 20px 0 12px;
+  color: #64748b;
+}
+
+.report-history-list {
+  display: grid;
+  gap: 16px;
+}
+
+.report-history-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: white;
+}
+
+.report-history-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+  font-size: 19px;
+  color: #0f172a;
+}
+
+.report-history-dates,
+.report-history-sections,
+.report-history-updated {
+  margin: 6px 0;
+  color: #475569;
+  font-size: 14px;
+}
+
+.report-history-updated {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.report-history-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #15803d;
+  background: #f0fdf4;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.report-history-empty {
+  text-align: center;
+  padding: 50px 20px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  color: #64748b;
+}
+
+.report-history-empty h2 {
+  color: #0f172a;
+}
+
+@media (max-width: 600px) {
+  .report-history-card {
+    flex-direction: column;
+  }
+}
+
+
+/* Parent Report History Actions */
+
+.report-history-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.report-history-open-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 14px;
+  background: #2563eb;
+  color: #ffffff;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.report-history-open-btn:hover {
+  background: #1d4ed8;
+}
+
+@media (max-width: 600px) {
+  .report-history-card-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+.report-history-delete-btn {
+  padding: 10px 16px;
+  border: 1px solid #dc2626;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #dc2626;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.report-history-delete-btn:hover:not(:disabled) {
+  background: #fef2f2;
+}
+
+.report-history-delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.report-history-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  margin: 20px 0;
+  padding: 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.report-history-filters > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.report-history-filters label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.report-history-filters select {
+  min-width: 160px;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: white;
+}
+
+.report-history-filters button {
+  padding: 10px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+}
+
+
+.report-history-no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  padding: 48px 24px;
+  margin-top: 20px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 14px;
+}
+
+.report-history-no-results svg {
+  color: #64748b;
+}
+
+.report-history-no-results h2 {
+  margin: 0;
+  font-size: 22px;
+  color: #0f172a;
+}
+
+.report-history-no-results p {
+  max-width: 440px;
+  margin: 0;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.report-history-no-results button {
+  margin-top: 8px;
+  padding: 11px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.report-history-no-results button:hover {
+  background: #1d4ed8;
+}

@@ -70,6 +70,77 @@ async function verifyStudent(req, res) {
   return student;
 }
 
+
+
+/**
+ * GET /api/students/:id/report-feedback/history
+ *
+ * Returns all saved feedback periods for the student,
+ * ordered from newest to oldest.
+ */
+router.get("/history", async (req, res) => {
+  try {
+    const student = await verifyStudent(req, res);
+
+    if (!student) return;
+
+    const reports = await db("parent_report_feedback")
+      .where("student_id", student.id)
+      .select(
+        "id",
+        "period_start",
+        "period_end",
+        "observations",
+        "improvements",
+        "goals",
+        "created_at",
+        "updated_at"
+      )
+      .orderBy("period_start", "desc")
+      .orderBy("id", "desc");
+
+    // Convert database dates to YYYY-MM-DD.
+    // Avoid timezone-related date shifts.
+    const formatDbDate = (value) => {
+      if (typeof value === "string") {
+        return value.slice(0, 10);
+      }
+
+      const year = value.getFullYear();
+      const month = String(value.getMonth() + 1).padStart(2, "0");
+      const day = String(value.getDate()).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    };
+
+    const history = reports.map((report) => ({
+      id: report.id,
+      startDate: formatDbDate(report.period_start),
+      endDate: formatDbDate(report.period_end),
+      hasObservations: Boolean(report.observations?.trim()),
+      hasImprovements: Boolean(report.improvements?.trim()),
+      hasGoals: Boolean(report.goals?.trim()),
+      createdAt: report.created_at,
+      updatedAt: report.updated_at,
+    }));
+
+    return res.json({
+      success: true,
+      count: history.length,
+      history,
+    });
+  } catch (error) {
+    console.error("Failed to retrieve report history:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to retrieve report history",
+    });
+  }
+});
+
+
+
 // GET saved feedback for a reporting period.
 router.get("/", async (req, res) => {
   try {
@@ -178,5 +249,79 @@ router.put("/", async (req, res) => {
     });
   }
 });
+
+
+
+/**
+ * DELETE /api/students/:id/report-feedback
+ *
+ * Deletes saved tutor feedback for one reporting period.
+ * Does not delete lessons or assessments.
+ */
+router.delete("/", async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    // Validate YYYY-MM-DD dates, including real calendar dates.
+    const isValidDate = (value) => {
+      if (typeof value !== "string") return false;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+
+      const [year, month, day] = value.split("-").map(Number);
+      const date = new Date(0);
+      date.setUTCFullYear(year, month - 1, day);
+
+      return (
+        date.getUTCFullYear() === year &&
+        date.getUTCMonth() === month - 1 &&
+        date.getUTCDate() === day
+      );
+    };
+
+    if (
+      !isValidDate(startDate) ||
+      !isValidDate(endDate) ||
+      startDate > endDate
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid startDate and endDate are required.",
+      });
+    }
+
+    // Reuse the existing authentication and ownership helper.
+    const student = await verifyStudent(req, res);
+
+    if (!student) return;
+
+    const deletedCount = await db("parent_report_feedback")
+      .where({
+        student_id: student.id,
+        period_start: startDate,
+        period_end: endDate,
+      })
+      .del();
+
+    if (deletedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No saved feedback found for this reporting period.",
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: "Saved report feedback deleted successfully.",
+    });
+  } catch (error) {
+    console.error("Failed to delete report feedback:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to delete saved report feedback.",
+    });
+  }
+});
+
 
 module.exports = router;
