@@ -214,10 +214,9 @@ function handleMonthChange(event) {
                 }
               >
                 <option value="all">All Reports</option>
-                <option value="saved">Saved Reports</option>
-                <option value="not_prepared">
-                  Not Prepared
-                </option>
+               <option value="not_prepared">Not Prepared</option>
+<option value="ready_to_send">Ready to Send</option>
+<option value="sent">Sent</option>
               </select>
             </div>
 
@@ -234,23 +233,31 @@ function handleMonthChange(event) {
             </button>
           </div>
 
-          {/* Summary cards */}
-          <div className="report-dashboard-summary">
-            <div>
-              <span>Total Students</span>
-              <strong>{summary.totalStudents}</strong>
-            </div>
+        
+          
+{/* Summary cards */}
+<div className="report-dashboard-summary">
+  <div>
+    <span>Total Students</span>
+    <strong>{summary.totalStudents}</strong>
+  </div>
 
-            <div>
-              <span>Reports Saved</span>
-              <strong>{summary.reportsSaved}</strong>
-            </div>
+  <div>
+    <span>Not Prepared</span>
+    <strong>{summary.notPrepared}</strong>
+  </div>
 
-            <div>
-              <span>Not Prepared</span>
-              <strong>{summary.notPrepared}</strong>
-            </div>
-          </div>
+  <div>
+    <span>Ready to Send</span>
+    <strong>{summary.readyToSend}</strong>
+  </div>
+
+  <div>
+    <span>Sent</span>
+    <strong>{summary.reportsSent}</strong>
+  </div>
+</div>
+
 
           {/* Student report list */}
           <div className="report-dashboard-students">
@@ -281,8 +288,9 @@ function handleMonthChange(event) {
             ) : (
               <div className="report-dashboard-list">
                 {filteredStudents.map((student) => {
-                  const isSaved =
-                    student.reportStatus === "saved";
+                  const isSent = student.reportStatus === "sent";
+const isReady = student.reportStatus === "ready_to_send";
+const isPrepared = isSent || isReady;
 
                   const reportParams =
                     new URLSearchParams(reportDateRange);
@@ -302,34 +310,44 @@ function handleMonthChange(event) {
                       </div>
 
                       <div className="report-dashboard-student-actions">
-                        <div
-                          className={`report-dashboard-status ${
-                            isSaved
-                              ? "status-saved"
-                              : "status-pending"
-                          }`}
-                        >
-                          {isSaved ? (
-                            <>
-                              <CheckCircle2 size={19} />
-                              <span>Saved</span>
-                            </>
-                          ) : (
-                            <>
-                              <Clock3 size={19} />
-                              <span>Not Prepared</span>
-                            </>
-                          )}
-                        </div>
+                       
+
+<div
+  className={`report-dashboard-status ${
+    isSent
+      ? "status-saved"
+      : isReady
+        ? "status-ready"
+        : "status-pending"
+  }`}
+>
+  {isSent ? (
+    <>
+      <CheckCircle2 size={19} />
+      <span>Sent</span>
+    </>
+  ) : isReady ? (
+    <>
+      <Clock3 size={19} />
+      <span>Ready to Send</span>
+    </>
+  ) : (
+    <>
+      <Clock3 size={19} />
+      <span>Not Prepared</span>
+    </>
+  )}
+</div>
+
 
                      <Link
   className="report-dashboard-action-btn"
   to={reportUrl}
   state={{ reportMonth: selectedMonth }}
 >
-                          {isSaved
-                            ? "View Report"
-                            : "Prepare Report"}
+                          {isPrepared
+  ? "View Report"
+  : "Prepare Report"}
                         </Link>
                       </div>
                     </div>

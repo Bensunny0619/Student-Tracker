@@ -324,4 +324,97 @@ router.delete("/", async (req, res) => {
 });
 
 
+
+/**
+ * PATCH /api/students/:id/report-feedback/delivery
+ *
+ * Manually mark an existing report as sent.
+ */
+const deliverySchema = periodSchema.safeExtend({
+  deliveryMethod: z.enum(["whatsapp", "email", "other"]),
+});
+
+router.patch("/delivery", async (req, res) => {
+  try {
+    const student = await verifyStudent(req, res);
+    if (!student) return;
+
+    const validation = deliverySchema.safeParse(req.body);
+
+    if (!validation.success) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid report delivery information",
+        errors: validation.error.flatten().fieldErrors,
+      });
+    }
+
+    const { startDate, endDate, deliveryMethod } =
+      validation.data;
+
+    const reportQuery = {
+      student_id: student.id,
+      period_start: startDate,
+      period_end: endDate,
+    };
+
+    const report = await db("parent_report_feedback")
+      .where(reportQuery)
+      .first();
+
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        message: "Save the report feedback before marking it as sent.",
+      });
+    }
+
+    if (Boolean(report.is_sent)) {
+      return res.status(409).json({
+        success: false,
+        message: "This report is already marked as sent.",
+      });
+    }
+
+    const updatedCount = await db("parent_report_feedback")
+      .where(reportQuery)
+      .where("is_sent", false)
+      .update({
+        is_sent: true,
+        sent_at: db.fn.now(),
+        delivery_method: deliveryMethod,
+        updated_at: db.fn.now(),
+      });
+
+    if (!updatedCount) {
+      return res.status(409).json({
+        success: false,
+        message: "Report delivery status has already changed.",
+      });
+    }
+
+    const updatedReport = await db("parent_report_feedback")
+      .where(reportQuery)
+      .first();
+
+    return res.json({
+      success: true,
+      message: "Report marked as sent successfully.",
+      delivery: {
+        isSent: Boolean(updatedReport.is_sent),
+        sentAt: updatedReport.sent_at,
+        deliveryMethod: updatedReport.delivery_method,
+      },
+    });
+  } catch (error) {
+    console.error("Failed to update report delivery:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to update report delivery.",
+    });
+  }
+});
+
+
 module.exports = router;

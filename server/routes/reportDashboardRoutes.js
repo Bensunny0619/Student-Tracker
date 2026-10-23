@@ -63,7 +63,13 @@ router.get("/", async (req, res) => {
         .whereIn("student_id", studentIds)
         .where("period_start", startDate)
         .where("period_end", endDate)
-        .select("student_id", "updated_at");
+       .select(
+  "student_id",
+  "updated_at",
+  "is_sent",
+  "sent_at",
+  "delivery_method"
+);
     }
 
     const savedReportMap = new Map(
@@ -73,34 +79,57 @@ router.get("/", async (req, res) => {
       ])
     );
 
-    const results = students.map((student) => {
-      const savedReport = savedReportMap.get(Number(student.id));
+  
+const results = students.map((student) => {
+  const savedReport = savedReportMap.get(Number(student.id));
 
-     return {
-  id: student.id,
-  firstName: student.first_name,
-  grade: student.grade,
-  reportStatus: savedReport ? "saved" : "not_prepared",
-  lastUpdated: savedReport?.updated_at || null,
-};
-    });
+  const reportStatus = !savedReport
+    ? "not_prepared"
+    : Boolean(savedReport.is_sent)
+      ? "sent"
+      : "ready_to_send";
 
-    const savedCount = results.filter(
-      (student) => student.reportStatus === "saved"
-    ).length;
+  return {
+    id: student.id,
+    firstName: student.first_name,
+    grade: student.grade,
+    reportStatus,
+    lastUpdated: savedReport?.updated_at || null,
+    sentAt: savedReport?.sent_at || null,
+    deliveryMethod: savedReport?.delivery_method || null,
+  };
+});
 
-    return res.json({
-      success: true,
-      month,
-      startDate,
-      endDate,
-      summary: {
-        totalStudents: results.length,
-        reportsSaved: savedCount,
-        notPrepared: results.length - savedCount,
-      },
-      students: results,
-    });
+
+    
+const readyCount = results.filter(
+  (student) => student.reportStatus === "ready_to_send"
+).length;
+
+const sentCount = results.filter(
+  (student) => student.reportStatus === "sent"
+).length;
+
+const notPreparedCount = results.filter(
+  (student) => student.reportStatus === "not_prepared"
+).length;
+
+return res.json({
+  success: true,
+  month,
+  startDate,
+  endDate,
+  summary: {
+    totalStudents: results.length,
+    reportsSaved: readyCount + sentCount,
+    readyToSend: readyCount,
+    reportsSent: sentCount,
+    notPrepared: notPreparedCount,
+  },
+  students: results,
+});
+
+
   } catch (error) {
     console.error("Report dashboard error:", error);
 
