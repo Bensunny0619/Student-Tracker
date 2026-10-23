@@ -1,6 +1,11 @@
 ﻿import { useEffect, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
-import { ArrowLeft, FileText, Printer } from "lucide-react";
+import {
+  Link,
+  useParams,
+  useSearchParams,
+  useLocation,
+} from "react-router-dom";
+import { ArrowLeft, FileText, Printer, Download } from "lucide-react";
 function formatPercentage(value) {
   if (value === null || value === undefined) {
     return "N/A";
@@ -56,6 +61,8 @@ function getReportDateRange(filter) {
 }
 export default function ParentReport() {
   const { id } = useParams();
+  const location = useLocation();
+const returnMonth = location.state?.reportMonth;
   const [searchParams] = useSearchParams();
 
   const urlStartDate = searchParams.get("startDate");
@@ -82,25 +89,58 @@ export default function ParentReport() {
     validDate(urlEndDate) &&
     urlStartDate <= urlEndDate;
 
-  const initialFilter = hasValidUrlDates
-    ? {
-        period: "custom",
-        startDate: urlStartDate,
-        endDate: urlEndDate,
-      }
-    : { period: "all" };
+ 
+const urlMonth = hasValidUrlDates
+  ? urlStartDate.slice(0, 7)
+  : null;
+
+const isFullMonth = (() => {
+  if (!hasValidUrlDates || !urlMonth) return false;
+
+  const [year, month] = urlMonth.split("-").map(Number);
+  const lastDay = new Date(year, month, 0).getDate();
+
+  return (
+    urlStartDate === `${urlMonth}-01` &&
+    urlEndDate ===
+      `${urlMonth}-${String(lastDay).padStart(2, "0")}`
+  );
+})();
+
+const initialFilter = hasValidUrlDates
+  ? {
+      period: "custom",
+      startDate: urlStartDate,
+      endDate: urlEndDate,
+      ...(isFullMonth
+        ? {
+            reportType: "monthly",
+            month: urlMonth,
+          }
+        : {}),
+    }
+  : { period: "all" };
+
 
 
  const [period, setPeriod] = useState(
-  hasValidUrlDates ? "custom" : "all"
+  isFullMonth ? "monthly" : hasValidUrlDates ? "custom" : "all"
 );
-  const [selectedMonth, setSelectedMonth] = useState(() => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  });
- const [startDate, setStartDate] = useState(
+
+const [selectedMonth, setSelectedMonth] = useState(() => {
+  if (isFullMonth) return urlMonth;
+
+  const now = new Date();
+  return `${now.getFullYear()}-${String(
+    now.getMonth() + 1
+  ).padStart(2, "0")}`;
+});
+
+
+const [startDate, setStartDate] = useState(
   hasValidUrlDates ? urlStartDate : ""
 );
+
 
 const [endDate, setEndDate] = useState(
   hasValidUrlDates ? urlEndDate : ""
@@ -329,6 +369,63 @@ const [filterError, setFilterError] = useState("");
     }));
   }
   const reportPeriodLabel = formatDateRangeLabel(appliedFilter);
+
+  const studentName = [
+  student?.first_name,
+  student?.last_name,
+]
+  .filter(Boolean)
+  .join(" ") || "Student";
+
+const safeStudentName = studentName
+  .trim()
+  .replace(/[^a-zA-Z0-9 -]/g, "")
+  .replace(/\s+/g, "_");
+
+const safeReportPeriod = reportPeriodLabel
+  .replace(/[^a-zA-Z0-9 -]/g, "")
+  .trim()
+  .replace(/\s+/g, "_");
+
+const suggestedPdfFilename =
+  `MathGenie_${safeStudentName}_${safeReportPeriod}.pdf`;
+
+  const parentMessage = `Dear Parent/Guardian,
+
+I hope you are doing well.
+
+Please find attached the MathGenie Student Progress Report for ${studentName}.
+
+Reporting Period: ${reportPeriodLabel}
+
+This report provides an overview of your child's learning progress, assessment performance, areas of strength, areas requiring improvement, and recommended next steps.
+
+We appreciate your continued support and commitment to your child's academic development.
+
+Please feel free to reach out if you have any questions about the report.
+
+Best regards,
+MathGenie
+Mathematics Tutoring`;
+
+async function handleCopyParentMessage() {
+  try {
+    await navigator.clipboard.writeText(parentMessage);
+    window.alert("Parent message copied successfully!");
+  } catch (error) {
+    window.alert("Unable to copy the parent message.");
+  }
+}
+
+async function handleCopyFilename() {
+  try {
+    await navigator.clipboard.writeText(suggestedPdfFilename);
+    window.alert("PDF filename copied successfully!");
+  } catch (error) {
+    window.alert("Unable to copy the PDF filename.");
+  }
+}
+
   if (loading) {
     return (
       <main className="students-page">
@@ -398,6 +495,23 @@ const [filterError, setFilterError] = useState("");
         <ArrowLeft size={18} />
         Back to Student Progress
       </Link>
+
+      <Link
+ to={
+  returnMonth
+    ? `/reports/dashboard?month=${encodeURIComponent(returnMonth)}`
+    : "/reports/dashboard"
+}
+  className="back-link"
+  onClick={(event) => {
+    if (!confirmDiscardChanges()) {
+      event.preventDefault();
+    }
+  }}
+>
+  <ArrowLeft size={18} />
+  Back to Report Dashboard
+</Link>
       <div className="parent-report-filters">
         <h2>Report Period</h2>
         <div className="parent-report-filter-controls">
@@ -536,30 +650,98 @@ const [filterError, setFilterError] = useState("");
           )}
         </div>
       </div>
-      <div className="parent-report-toolbar">
-        <button
-          type="button"
-          className="parent-report-print-btn"
-          onClick={() => window.print()}
-            disabled={loading || feedbackLoading || feedbackSaving || !feedbackReady || feedbackDirty}
-        >
-          <Printer size={18} />
-          Print / Save as PDF
-        </button>
-      </div>
+     <div className="parent-report-toolbar">
+  <button
+    type="button"
+    className="parent-report-print-btn"
+    onClick={() => window.print()}
+    disabled={
+      loading ||
+      feedbackLoading ||
+      feedbackSaving ||
+      !feedbackReady ||
+      feedbackDirty
+    }
+  >
+    <Printer size={18} />
+    Print Report
+  </button>
+
+  <button
+    type="button"
+    className="parent-report-download-btn"
+    onClick={() => window.print()}
+    disabled={
+      loading ||
+      feedbackLoading ||
+      feedbackSaving ||
+      !feedbackReady ||
+      feedbackDirty
+    }
+  >
+    <Download size={18} />
+    Download PDF
+  </button>
+</div>
+
+
+<div className="parent-report-sharing">
+  <h2>Share Report with Parent</h2>
+
+  <p>
+    Save your report as a PDF, then attach it to
+    your WhatsApp message or email.
+  </p>
+
+  <div className="parent-report-filename">
+    <label>Suggested PDF Filename</label>
+
+    <div className="parent-report-filename-row">
+      <code>{suggestedPdfFilename}</code>
+
+      <button
+        type="button"
+        onClick={handleCopyFilename}
+      >
+        Copy Filename
+      </button>
+    </div>
+  </div>
+
+  <div className="parent-report-share-actions">
+    <button
+      type="button"
+      onClick={handleCopyParentMessage}
+      disabled={
+        loading ||
+        feedbackLoading ||
+        feedbackSaving ||
+        !feedbackReady ||
+        feedbackDirty
+      }
+    >
+      Copy Parent Message
+    </button>
+  </div>
+</div>
+
+
       <section className="parent-report">
         <div className="parent-report-header">
           <div className="parent-report-brand">
-            <FileText size={34} />
-            <div>
-              <p className="eyebrow">STUDENT PROGRESS TRACKER</p>
-              <h1>Student Progress Report</h1>
-              <p>Academic Performance & Learning Development</p>
-            </div>
-          </div>
+  <FileText size={34} />
+
+  <div>
+    <p className="eyebrow">MATHGENIE</p>
+
+    <h1>Student Progress Report</h1>
+
+    <p>Personalized Mathematics Education & Academic Excellence</p>
+  </div>
+</div>
           <div className="parent-report-details">
             <p>
-              <strong>Student:</strong> {student?.first_name}
+              <strong>Student:</strong> {studentName}
             </p>
             <p>
               <strong>Grade:</strong> {student?.grade}
@@ -723,9 +905,16 @@ const [filterError, setFilterError] = useState("");
             parents. Assessment results should be considered alongside classroom
             participation, lesson observations, and individual learning needs.
           </p>
-          <p className="parent-report-generated">
-            Generated on {reportDate}
-          </p>
+          <div className="mathgenie-report-footer">
+  <p>
+    <strong>MathGenie</strong> — Helping Every Student
+    Build Confidence in Mathematics.
+  </p>
+
+  <p className="parent-report-generated">
+    Report generated on {reportDate}
+  </p>
+</div>
         </div>
       </section>
     </main>

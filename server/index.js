@@ -12,6 +12,7 @@ const lessonRoutes = require("./routes/lessonRoutes");
 const assessmentRoutes = require("./routes/assessmentRoutes");
 const progressRoutes = require("./routes/progressRoutes");
 const reportFeedbackRoutes = require("./routes/reportFeedbackRoutes");
+const reportDashboardRoutes = require("./routes/reportDashboardRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -42,6 +43,7 @@ app.use("/api/students/:id/lessons", lessonRoutes);
 app.use("/api/students/:id/assessments", assessmentRoutes);
 app.use("/api/students/:id/progress", progressRoutes);
 app.use("/api/students/:id/report-feedback", reportFeedbackRoutes);
+app.use("/api/reports/dashboard", reportDashboardRoutes);
 
 
 app.listen(PORT, () => {

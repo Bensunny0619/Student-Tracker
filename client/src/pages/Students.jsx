@@ -47,9 +47,9 @@ export default function Students() {
 
   // Filter students whenever search or status changes
   const filteredStudents = students.filter((student) => {
-    const matchesSearch = student.first_name
-      .toLowerCase()
-      .includes(search.trim().toLowerCase());
+    const matchesSearch = String(student.first_name || "")
+  .toLowerCase()
+  .includes(search.trim().toLowerCase());
 
     const matchesStatus =
       statusFilter === "all" ||
@@ -72,10 +72,25 @@ export default function Students() {
           <p>View and manage your tutoring students.</p>
         </div>
 
-        <Link to="/students/new" className="primary-link">
-          <Plus size={18} />
-          Add Student
-        </Link>
+        
+<div className="students-heading-actions">
+  <Link
+    to="/reports/dashboard"
+    className="reports-dashboard-link"
+  >
+    <ClipboardList size={18} />
+    Parent Reports Dashboard
+  </Link>
+
+  <Link
+    to="/students/new"
+    className="primary-link"
+  >
+    <Plus size={18} />
+    Add Student
+  </Link>
+</div>
+
       </div>
 
       {/* Search and status filters */}
